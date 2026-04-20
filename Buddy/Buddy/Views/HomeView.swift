@@ -6,14 +6,14 @@
 //
 
 import SwiftUI
-import RealityKit
 
 struct HomeView: View {
+    @AppStorage("buddyName") private var buddyName = ""
     @StateObject private var viewModel = HomeViewModel()
-    @State private var buddyFloat = false
     @State private var showGreeting = false
     @State private var showHabitEdit = false
     @State private var showTaskEdit = false
+    @State private var showSettings = false
     @State private var showAllTasks = false
     @State private var showAllHabits = false
 
@@ -78,6 +78,9 @@ struct HomeView: View {
     }
 
     var body: some View {
+        if buddyName.isEmpty {
+            BuddyOnboardingView(buddyName: $buddyName)
+        } else {
         NavigationView {
             ZStack {
                 // Background
@@ -94,20 +97,11 @@ struct HomeView: View {
                         // ── Buddy Hero ───────────────────────────────────
                         VStack(spacing: 0) {
                             BuddyFigure()
-                                .offset(y: buddyFloat ? -8 : 0)
-                                .animation(
-                                    .easeInOut(duration: 2.2).repeatForever(autoreverses: true),
-                                    value: buddyFloat
-                                )
-                                .onAppear { buddyFloat = true }
 
                             // Speech bubble
                             HStack(alignment: .top, spacing: 0) {
                                 Spacer()
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(greeting)
-                                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                                        .foregroundColor(Color(hex: "1C1C3A"))
                                     Text(buddyMessage)
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(Color(hex: "5B54D6"))
@@ -117,14 +111,14 @@ struct HomeView: View {
                                 .padding(.vertical, 12)
                                 .background(
                                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                        .fill(Color.white.opacity(0.9))
+                                        .fill(Color(.secondarySystemGroupedBackground))
                                         .shadow(color: Color(hex: "6C63FF").opacity(0.15), radius: 12, x: 0, y: 4)
                                 )
                                 .overlay(
                                     // Tail
                                     Image(systemName: "arrowtriangle.left.fill")
                                         .font(.system(size: 12))
-                                        .foregroundColor(Color.white.opacity(0.9))
+                                        .foregroundColor(Color(.secondarySystemGroupedBackground))
                                         .offset(x: -20, y: 8),
                                     alignment: .topLeading
                                 )
@@ -153,68 +147,31 @@ struct HomeView: View {
                             openHabitsCount: viewModel.openHabitsCount
                         )
 
-                        // ── Tasks ─────────────────────────────────────────
-                        SectionBlock(
-                            title: Constants.Text.tasksSectionTitle,
-                            icon: "checkmark.circle.fill",
-                            accent: Color(hex: "6C63FF"),
-                            count: viewModel.tasks.filter { $0.isDone }.count,
-                            total: viewModel.tasks.count,
-                            onEdit: { showTaskEdit = true }
-                        ) {
-                            if viewModel.tasks.isEmpty {
-                                EmptyHint(text: "Keine Aufgaben für heute.", icon: "tray")
-                            } else {
-                                let visible = showAllTasks ? viewModel.tasks : Array(viewModel.tasks.prefix(1))
-                                ForEach(visible) { task in
-                                    TaskCardView(task: task) { viewModel.toggleTask(task) }
-                                }
-                                if viewModel.tasks.count > 1 {
-                                    Button {
-                                        withAnimation(.spring(response: 0.35)) { showAllTasks.toggle() }
-                                    } label: {
-                                        Label(
-                                            showAllTasks ? "Weniger anzeigen" : "\(viewModel.tasks.count - 1) weitere Aufgabe\(viewModel.tasks.count - 1 == 1 ? "" : "n")",
-                                            systemImage: showAllTasks ? "chevron.up" : "chevron.down"
-                                        )
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(Color(hex: "6C63FF"))
-                                    }
-                                    .padding(.top, 2)
-                                }
+                        // ── CTA ───────────────────────────────────────────
+                        Button {
+                            showTaskEdit = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text("\(buddyName.isEmpty ? "Buddy" : buddyName), zeig mir, was heute ansteht")
+                                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 13, weight: .semibold))
                             }
-                        }
-
-                        // ── Habits ────────────────────────────────────────
-                        SectionBlock(
-                            title: Constants.Text.habitsSectionTitle,
-                            icon: "flame.fill",
-                            accent: Color(hex: "FF6584"),
-                            count: viewModel.habits.filter { $0.isDone }.count,
-                            total: viewModel.habits.count,
-                            onEdit: { showHabitEdit = true }
-                        ) {
-                            if viewModel.habits.isEmpty {
-                                EmptyHint(text: "Noch keine Habits vorhanden.", icon: "sparkles")
-                            } else {
-                                let visible = showAllHabits ? viewModel.habits : Array(viewModel.habits.prefix(1))
-                                ForEach(visible) { habit in
-                                    HabitCardView(habit: habit) { viewModel.toggleHabit(habit) }
-                                }
-                                if viewModel.habits.count > 1 {
-                                    Button {
-                                        withAnimation(.spring(response: 0.35)) { showAllHabits.toggle() }
-                                    } label: {
-                                        Label(
-                                            showAllHabits ? "Weniger anzeigen" : "\(viewModel.habits.count - 1) weitere\(viewModel.habits.count - 1 == 1 ? "n Habit" : " Habits")",
-                                            systemImage: showAllHabits ? "chevron.up" : "chevron.down"
-                                        )
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(Color(hex: "FF6584"))
-                                    }
-                                    .padding(.top, 2)
-                                }
-                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color(hex: "6C63FF"), Color(hex: "A78BFA")],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .shadow(color: Color(hex: "6C63FF").opacity(0.35), radius: 10, x: 0, y: 4)
                         }
 
                         // ── Footer ────────────────────────────────────────
@@ -227,8 +184,20 @@ struct HomeView: View {
                     .padding(.bottom, 32)
                 }
             }
-            .navigationTitle(Constants.Text.appName)
+            .navigationTitle(buddyName.isEmpty ? Constants.Text.appName : buddyName)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showSettings = true } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(hex: "6C63FF"))
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
         }
         .sheet(isPresented: $showTaskEdit) {
             TaskEditView(tasks: $viewModel.tasks)
@@ -236,6 +205,7 @@ struct HomeView: View {
         .sheet(isPresented: $showHabitEdit) {
             HabitEditView(habits: $viewModel.habits)
         }
+        } // end else
     }
 }
 
@@ -313,7 +283,7 @@ private struct ProgressStrip: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.85))
+                .fill(Color(.secondarySystemGroupedBackground))
                 .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
         )
     }
@@ -344,62 +314,17 @@ private struct StatBadge: View {
 // MARK: - Subviews
 
 private struct BuddyFigure: View {
-    @State private var breathe = false
+    @AppStorage("buddyGender") private var buddyGender = ""
+
+    private var imageName: String { buddyGender.isEmpty ? "Buddy-mann" : buddyGender }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Ellipse()
-                .fill(Color.black.opacity(0.07))
-                .frame(width: 100, height: 16)
-                .blur(radius: 8)
-                .scaleEffect(x: breathe ? 1.05 : 0.95)
-                .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: breathe)
-
-            BuddySceneView()
-                .frame(width: 200, height: 220)
-                .shadow(color: Color(hex: "6C63FF").opacity(0.18), radius: 18, x: 0, y: 8)
-        }
-        .onAppear { breathe = true }
+        Image(imageName)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 260)
+            .shadow(color: Color(hex: "6C63FF").opacity(0.15), radius: 14, x: 0, y: 6)
     }
-}
-
-private struct BuddySceneView: UIViewRepresentable {
-    func makeUIView(context: Context) -> ARView {
-        let arView = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
-        arView.backgroundColor = .clear
-        arView.environment.background = .color(.clear)
-
-        let anchor = AnchorEntity(world: .zero)
-        arView.scene.addAnchor(anchor)
-
-        _Concurrency.Task {
-            guard let url = Bundle.main.url(forResource: "Buddy", withExtension: "usdz") else {
-                print("⚠️ Buddy.usdz not found in bundle")
-                return
-            }
-            guard let model = try? await ModelEntity(contentsOf: url) else { return }
-            model.scale = SIMD3<Float>(repeating: 0.3)
-            anchor.addChild(model)
-
-            let spinAnim = FromToByAnimation(
-                name: "spin",
-                from: Transform(rotation: simd_quatf(angle: 0, axis: [0, 1, 0])),
-                to: Transform(rotation: simd_quatf(angle: .pi * 2, axis: [0, 1, 0])),
-                duration: 8,
-                timing: .linear,
-                isAdditive: false,
-                bindTarget: .transform,
-                repeatMode: .repeat
-            )
-            if let resource = try? AnimationResource.generate(with: spinAnim) {
-                model.playAnimation(resource)
-            }
-        }
-
-        return arView
-    }
-
-    func updateUIView(_ uiView: ARView, context: Context) {}
 }
 
 private struct SectionBlock<Content: View>: View {
@@ -419,7 +344,7 @@ private struct SectionBlock<Content: View>: View {
                     .font(.system(size: 15, weight: .semibold))
                 Text(title)
                     .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(hex: "1C1C3A"))
+                    .foregroundColor(.primary)
                 Spacer()
                 if let onEdit {
                     Button(action: onEdit) {
@@ -461,7 +386,7 @@ private struct SectionBlock<Content: View>: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.85))
+                .fill(Color(.secondarySystemGroupedBackground))
                 .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
         )
     }
