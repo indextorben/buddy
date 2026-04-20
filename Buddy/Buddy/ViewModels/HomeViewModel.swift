@@ -11,11 +11,25 @@ import Combine
 final class HomeViewModel: ObservableObject {
     @Published var tasks: [Task]
     @Published var habits: [Habit]
+    @Published var appointments: [Appointment] = []
+    @Published var notes: [Note] = []
+    @Published var shoppingItems: [ShoppingItem] = []
+    @Published var deadlines: [Deadline] = []
+    @Published var delegatedItems: [DelegatedItem] = []
+    @Published var birthdays: [Birthday] = []
+    @Published var ideas: [Idea] = []
+    @Published var projects: [Project] = []
 
     init(tasks: [Task] = DataService.sampleTasks,
          habits: [Habit] = DataService.sampleHabits) {
         self.tasks = tasks
         self.habits = habits
+    }
+
+    var todayAppointments: [Appointment] {
+        appointments
+            .filter { Calendar.current.isDateInToday($0.time) }
+            .sorted { $0.time < $1.time }
     }
 
     var openTasksCount: Int {

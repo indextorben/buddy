@@ -30,67 +30,70 @@ struct TasksView: View {
 
     var body: some View {
         NavigationView {
-            ZStack(alignment: .bottom) {
-                Color(.systemGroupedBackground).ignoresSafeArea()
+            List {
+                // ── Aufgaben ───────────────────────────────────
+                Section {
+                    if viewModel.tasks.isEmpty {
+                        emptyState(text: "Keine Aufgaben", icon: "checkmark.circle")
+                            .listRowBackground(Color(.secondarySystemGroupedBackground))
+                    } else {
+                        ForEach(viewModel.tasks) { task in
+                            TaskCardView(task: task) { viewModel.toggleTask(task) }
+                                .listRowInsets(EdgeInsets())
+                                .listRowBackground(Color(.secondarySystemGroupedBackground))
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        withAnimation { viewModel.tasks.removeAll { $0.id == task.id } }
+                                    } label: { Label("Löschen", systemImage: "trash") }
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-
-                        // ── Aufgaben ───────────────────────────────────
-                        sectionHeader("Aufgaben", icon: "checkmark.circle.fill", color: Color(hex: accentHex))
-
-                        if viewModel.tasks.isEmpty {
-                            emptyState(text: "Keine Aufgaben", icon: "checkmark.circle")
-                        } else {
-                            ForEach(viewModel.tasks) { task in
-                                TaskCardView(task: task) { viewModel.toggleTask(task) }
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                        Button(role: .destructive) {
-                                            withAnimation { viewModel.tasks.removeAll { $0.id == task.id } }
-                                        } label: { Label("Löschen", systemImage: "trash") }
-
-                                        Button {
-                                            renameText = task.title
-                                            renamingTaskID = task.id
-                                        } label: { Label("Umbenennen", systemImage: "paintbrush") }
-                                            .tint(Color(hex: accentHex))
-                                    }
-                            }
+                                    Button {
+                                        renameText = task.title
+                                        renamingTaskID = task.id
+                                    } label: { Label("Umbenennen", systemImage: "paintbrush") }
+                                        .tint(Color(hex: accentHex))
+                                }
                         }
-
-                        addCard
-
-                        Divider().padding(.vertical, 4)
-
-                        // ── Habits ─────────────────────────────────────
-                        sectionHeader("Habits", icon: "flame.fill", color: Color(hex: "FF6584"))
-
-                        if viewModel.habits.isEmpty {
-                            emptyState(text: "Keine Habits", icon: "flame")
-                        } else {
-                            ForEach(viewModel.habits) { habit in
-                                HabitCardView(habit: habit) { viewModel.toggleHabit(habit) }
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                        Button(role: .destructive) {
-                                            withAnimation { viewModel.habits.removeAll { $0.id == habit.id } }
-                                        } label: { Label("Löschen", systemImage: "trash") }
-
-                                        Button {
-                                            renameText = habit.title
-                                            renamingHabitID = habit.id
-                                        } label: { Label("Umbenennen", systemImage: "paintbrush") }
-                                            .tint(Color(hex: "FF6584"))
-                                    }
-                            }
-                        }
-
-                        addHabitCard
-                        Spacer().frame(height: 20)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
+                    addCard
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color(.systemGroupedBackground))
+                } header: {
+                    sectionHeader("Aufgaben", icon: "checkmark.circle.fill", color: Color(hex: accentHex))
+                        .textCase(nil)
+                }
+
+                // ── Habits ─────────────────────────────────────
+                Section {
+                    if viewModel.habits.isEmpty {
+                        emptyState(text: "Keine Habits", icon: "flame")
+                            .listRowBackground(Color(.secondarySystemGroupedBackground))
+                    } else {
+                        ForEach(viewModel.habits) { habit in
+                            HabitCardView(habit: habit) { viewModel.toggleHabit(habit) }
+                                .listRowInsets(EdgeInsets())
+                                .listRowBackground(Color(.secondarySystemGroupedBackground))
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        withAnimation { viewModel.habits.removeAll { $0.id == habit.id } }
+                                    } label: { Label("Löschen", systemImage: "trash") }
+
+                                    Button {
+                                        renameText = habit.title
+                                        renamingHabitID = habit.id
+                                    } label: { Label("Umbenennen", systemImage: "paintbrush") }
+                                        .tint(Color(hex: "FF6584"))
+                                }
+                        }
+                    }
+                    addHabitCard
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color(.systemGroupedBackground))
+                } header: {
+                    sectionHeader("Habits", icon: "flame.fill", color: Color(hex: "FF6584"))
+                        .textCase(nil)
                 }
             }
+            .listStyle(.insetGrouped)
             .navigationTitle("Heute")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
@@ -154,22 +157,6 @@ struct TasksView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, 4)
-    }
-
-    private var emptyState: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
-                .foregroundColor(Color(hex: accentHex).opacity(0.3))
-            Text("Keine Aufgaben")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.secondary)
-            Text("Füge deine erste Aufgabe hinzu.")
-                .font(.system(size: 14))
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
     }
 
     private var addCard: some View {

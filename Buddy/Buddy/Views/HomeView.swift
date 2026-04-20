@@ -16,6 +16,15 @@ struct HomeView: View {
     @State private var showSettings = false
     @State private var showAllTasks = false
     @State private var showAllHabits = false
+    @State private var showAppointments = false
+    @State private var showNotes = false
+    @State private var showShopping = false
+    @State private var showDeadlines = false
+    @State private var showDelegation = false
+    @State private var showBirthdays = false
+    @State private var showIdeas = false
+    @State private var showProjects = false
+    @AppStorage("currentFocus") private var currentFocus = ""
 
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -147,6 +156,9 @@ struct HomeView: View {
                             openHabitsCount: viewModel.openHabitsCount
                         )
 
+                        // ── Sekretär ─────────────────────────────────────
+                        secretaryCards
+
                         // ── CTA ───────────────────────────────────────────
                         Button {
                             showTaskEdit = true
@@ -205,7 +217,267 @@ struct HomeView: View {
         .sheet(isPresented: $showHabitEdit) {
             HabitsView(viewModel: viewModel)
         }
+        .sheet(isPresented: $showAppointments) {
+            AppointmentsView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showNotes) {
+            NotesView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showShopping) {
+            ShoppingView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showDeadlines) {
+            DeadlinesView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showDelegation) {
+            DelegationView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showBirthdays) {
+            BirthdaysView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showIdeas) {
+            IdeasView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showProjects) {
+            ProjectsView(viewModel: viewModel)
+        }
         } // end else
+    }
+}
+
+// MARK: - Secretary Cards
+
+extension HomeView {
+    private var secretaryCards: some View {
+        VStack(spacing: 10) {
+            // Termine
+            Button { showAppointments = true } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color(hex: "3B82F6").opacity(0.15)).frame(width: 38, height: 38)
+                        Image(systemName: "calendar")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(hex: "3B82F6"))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Termine")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.primary)
+                        let c = viewModel.todayAppointments.count
+                        Text(c == 0 ? "Keine Termine heute" : "\(c) Termin\(c == 1 ? "" : "e") heute")
+                            .font(.system(size: 12)).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold)).foregroundColor(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+            }
+            .buttonStyle(.plain)
+
+            // Notizen
+            Button { showNotes = true } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color(hex: "F97316").opacity(0.15)).frame(width: 38, height: 38)
+                        Image(systemName: "note.text")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(hex: "F97316"))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Notizen")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.primary)
+                        let c = viewModel.notes.count
+                        Text(c == 0 ? "Keine Notizen" : "\(c) Notiz\(c == 1 ? "" : "en")")
+                            .font(.system(size: 12)).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold)).foregroundColor(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+            }
+            .buttonStyle(.plain)
+
+            // Einkaufsliste
+            Button { showShopping = true } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color(hex: "EC4899").opacity(0.15)).frame(width: 38, height: 38)
+                        Image(systemName: "cart.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(hex: "EC4899"))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Einkaufsliste")
+                            .font(.system(size: 15, weight: .semibold)).foregroundColor(.primary)
+                        let c = viewModel.shoppingItems.filter { !$0.isDone }.count
+                        Text(c == 0 ? "Alles besorgt" : "\(c) Artikel offen")
+                            .font(.system(size: 12)).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold)).foregroundColor(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+            }
+            .buttonStyle(.plain)
+
+            // Fristen
+            Button { showDeadlines = true } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color(hex: "EF4444").opacity(0.15)).frame(width: 38, height: 38)
+                        Image(systemName: "flag.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(hex: "EF4444"))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Fristen")
+                            .font(.system(size: 15, weight: .semibold)).foregroundColor(.primary)
+                        let over = viewModel.deadlines.filter { $0.isOverdue }.count
+                        let c    = viewModel.deadlines.count
+                        Text(c == 0 ? "Keine Fristen" : over > 0 ? "\(over) überfällig" : "\(c) Frist\(c == 1 ? "" : "en")")
+                            .font(.system(size: 12))
+                            .foregroundColor(over > 0 ? Color(hex: "EF4444") : .secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold)).foregroundColor(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+            }
+            .buttonStyle(.plain)
+
+            // Delegiert
+            Button { showDelegation = true } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color(hex: "8B5CF6").opacity(0.15)).frame(width: 38, height: 38)
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(Color(hex: "8B5CF6"))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Delegiert")
+                            .font(.system(size: 15, weight: .semibold)).foregroundColor(.primary)
+                        let c = viewModel.delegatedItems.filter { !$0.isDone }.count
+                        Text(c == 0 ? "Nichts offen" : "\(c) warte\(c == 1 ? "" : "n") auf Antwort")
+                            .font(.system(size: 12)).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold)).foregroundColor(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+            }
+            .buttonStyle(.plain)
+
+            // Geburtstage
+            Button { showBirthdays = true } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color(hex: "F472B6").opacity(0.15)).frame(width: 38, height: 38)
+                        Image(systemName: "gift.fill")
+                            .font(.system(size: 15, weight: .semibold)).foregroundColor(Color(hex: "F472B6"))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Geburtstage").font(.system(size: 15, weight: .semibold)).foregroundColor(.primary)
+                        let soon = viewModel.birthdays.filter { $0.daysUntil <= 7 }.count
+                        Text(soon > 0 ? "\(soon) bald" : viewModel.birthdays.isEmpty ? "Noch keine" : "\(viewModel.birthdays.count) gespeichert")
+                            .font(.system(size: 12)).foregroundColor(soon > 0 ? Color(hex: "F472B6") : .secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundColor(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+            }.buttonStyle(.plain)
+
+            // Ideen
+            Button { showIdeas = true } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color(hex: "FBBF24").opacity(0.15)).frame(width: 38, height: 38)
+                        Image(systemName: "lightbulb.fill")
+                            .font(.system(size: 15, weight: .semibold)).foregroundColor(Color(hex: "FBBF24"))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Ideen").font(.system(size: 15, weight: .semibold)).foregroundColor(.primary)
+                        let c = viewModel.ideas.count
+                        Text(c == 0 ? "Noch keine Ideen" : "\(c) Idee\(c == 1 ? "" : "n")")
+                            .font(.system(size: 12)).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundColor(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+            }.buttonStyle(.plain)
+
+            // Projekte
+            Button { showProjects = true } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color(hex: "6366F1").opacity(0.15)).frame(width: 38, height: 38)
+                        Image(systemName: "folder.fill")
+                            .font(.system(size: 15, weight: .semibold)).foregroundColor(Color(hex: "6366F1"))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Projekte").font(.system(size: 15, weight: .semibold)).foregroundColor(.primary)
+                        let active = viewModel.projects.filter { $0.status == .active }.count
+                        let c      = viewModel.projects.count
+                        Text(c == 0 ? "Keine Projekte" : active > 0 ? "\(active) aktiv" : "\(c) gespeichert")
+                            .font(.system(size: 12)).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundColor(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+            }.buttonStyle(.plain)
+
+            // Fokus
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Image(systemName: "scope")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Color(hex: "10B981"))
+                    Text("Aktueller Fokus")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Color(hex: "10B981"))
+                }
+                TextField("Womit beschäftige ich mich gerade?", text: $currentFocus)
+                    .font(.system(size: 14))
+                    .foregroundColor(.primary)
+            }
+            .padding(14)
+            .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3))
+        }
     }
 }
 
