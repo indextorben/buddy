@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Buddy liest deinen Apple Kalender, um Termine in deiner Tagesplanung anzuzeigen.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Buddy liest deinen Apple Kalender, um Termine in deiner Tagesplanung anzuzeigen.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
