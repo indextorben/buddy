@@ -200,10 +200,10 @@ struct HomeView: View {
             SettingsView()
         }
         .sheet(isPresented: $showTaskEdit) {
-            TaskEditView(tasks: $viewModel.tasks)
+            TasksView(viewModel: viewModel)
         }
         .sheet(isPresented: $showHabitEdit) {
-            HabitEditView(habits: $viewModel.habits)
+            HabitsView(viewModel: viewModel)
         }
         } // end else
     }
