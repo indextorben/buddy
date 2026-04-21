@@ -12,6 +12,8 @@ struct BuddyAssistantView: View {
     @State private var splitInput = ""
     @State private var showSplitSheet = false
     @State private var deferredIDs: Set<UUID> = []
+    @State private var showTasks = false
+    @State private var showHabits = false
 
     private let cal = Calendar.current
 
@@ -115,6 +117,8 @@ struct BuddyAssistantView: View {
             }
         }
         .sheet(isPresented: $showSplitSheet) { splitSheet }
+        .sheet(isPresented: $showTasks) { TasksView(viewModel: viewModel) }
+        .sheet(isPresented: $showHabits) { HabitsView(viewModel: viewModel) }
     }
 
     // MARK: - Cards
@@ -249,7 +253,15 @@ struct BuddyAssistantView: View {
 
     private var habitCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel("Habits heute", icon: "repeat.circle.fill", color: "10B981")
+            HStack {
+                sectionLabel("Habits heute", icon: "repeat.circle.fill", color: "10B981")
+                Spacer()
+                Button { showHabits = true } label: {
+                    Text("Bearbeiten")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color(hex: "10B981"))
+                }
+            }
             if viewModel.habits.isEmpty {
                 Text("Keine Habits eingetragen").font(.system(size: 13)).foregroundColor(.secondary)
             } else {
@@ -299,7 +311,15 @@ struct BuddyAssistantView: View {
 
     private var priorityCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionLabel("Vorgeschlagene Reihenfolge", icon: "arrow.up.arrow.down", color: "6C63FF")
+            HStack {
+                sectionLabel("Vorgeschlagene Reihenfolge", icon: "arrow.up.arrow.down", color: "6C63FF")
+                Spacer()
+                Button { showTasks = true } label: {
+                    Text("Bearbeiten")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color(hex: accentHex))
+                }
+            }
             if priorityOrder.isEmpty {
                 Text("Keine offenen Aufgaben").font(.system(size: 13)).foregroundColor(.secondary)
             } else {

@@ -16,12 +16,9 @@ struct TasksView: View {
 
     @State private var newTitle      = ""
     @State private var newPriority   = "Mittel"
-    @State private var newHabitTitle = ""
-    @State private var renamingTaskID:  UUID? = nil
-    @State private var renamingHabitID: UUID? = nil
+    @State private var renamingTaskID: UUID? = nil
     @State private var renameText = ""
     @FocusState private var focused: Bool
-    @FocusState private var habitFocused: Bool
 
     private let priorities = ["Hoch", "Mittel", "Niedrig"]
     private static let priorityColor: [String: String] = [
@@ -30,71 +27,35 @@ struct TasksView: View {
 
     var body: some View {
         NavigationView {
-            List {
-                // ── Aufgaben ───────────────────────────────────
-                Section {
-                    if viewModel.tasks.isEmpty {
-                        emptyState(text: "Keine Aufgaben", icon: "checkmark.circle")
-                            .listRowBackground(Color(.secondarySystemGroupedBackground))
-                    } else {
-                        ForEach(viewModel.tasks) { task in
-                            TaskCardView(task: task) { viewModel.toggleTask(task) }
-                                .listRowInsets(EdgeInsets())
-                                .listRowBackground(Color(.secondarySystemGroupedBackground))
-                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                    Button(role: .destructive) {
-                                        withAnimation { viewModel.tasks.removeAll { $0.id == task.id } }
-                                    } label: { Label("Löschen", systemImage: "trash") }
-
-                                    Button {
-                                        renameText = task.title
-                                        renamingTaskID = task.id
-                                    } label: { Label("Umbenennen", systemImage: "paintbrush") }
-                                        .tint(Color(hex: accentHex))
-                                }
+            ZStack {
+                Color(.systemGroupedBackground).ignoresSafeArea()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 12) {
+                        if viewModel.tasks.isEmpty {
+                            emptyState(text: "Keine Aufgaben", icon: "checkmark.circle")
+                        } else {
+                            ForEach(viewModel.tasks) { task in
+                                TaskCardView(task: task) { viewModel.toggleTask(task) }
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button(role: .destructive) {
+                                            withAnimation { viewModel.tasks.removeAll { $0.id == task.id } }
+                                        } label: { Label("Löschen", systemImage: "trash") }
+                                        Button {
+                                            renameText = task.title
+                                            renamingTaskID = task.id
+                                        } label: { Label("Umbenennen", systemImage: "paintbrush") }
+                                            .tint(Color(hex: accentHex))
+                                    }
+                            }
                         }
+                        addCard
+                        Spacer().frame(height: 20)
                     }
-                    addCard
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color(.systemGroupedBackground))
-                } header: {
-                    sectionHeader("Aufgaben", icon: "checkmark.circle.fill", color: Color(hex: accentHex))
-                        .textCase(nil)
-                }
-
-                // ── Habits ─────────────────────────────────────
-                Section {
-                    if viewModel.habits.isEmpty {
-                        emptyState(text: "Keine Habits", icon: "flame")
-                            .listRowBackground(Color(.secondarySystemGroupedBackground))
-                    } else {
-                        ForEach(viewModel.habits) { habit in
-                            HabitCardView(habit: habit) { viewModel.toggleHabit(habit) }
-                                .listRowInsets(EdgeInsets())
-                                .listRowBackground(Color(.secondarySystemGroupedBackground))
-                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                    Button(role: .destructive) {
-                                        withAnimation { viewModel.habits.removeAll { $0.id == habit.id } }
-                                    } label: { Label("Löschen", systemImage: "trash") }
-
-                                    Button {
-                                        renameText = habit.title
-                                        renamingHabitID = habit.id
-                                    } label: { Label("Umbenennen", systemImage: "paintbrush") }
-                                        .tint(Color(hex: "FF6584"))
-                                }
-                        }
-                    }
-                    addHabitCard
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color(.systemGroupedBackground))
-                } header: {
-                    sectionHeader("Habits", icon: "flame.fill", color: Color(hex: "FF6584"))
-                        .textCase(nil)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
                 }
             }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Heute")
+            .navigationTitle("Aufgaben")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -116,20 +77,6 @@ struct TasksView: View {
                     renamingTaskID = nil
                 }
                 Button("Abbrechen", role: .cancel) { renamingTaskID = nil }
-            }
-            .alert("Habit umbenennen", isPresented: Binding(
-                get: { renamingHabitID != nil },
-                set: { if !$0 { renamingHabitID = nil } }
-            )) {
-                TextField("Name", text: $renameText)
-                Button("Speichern") {
-                    if let id = renamingHabitID,
-                       let i = viewModel.habits.firstIndex(where: { $0.id == id }) {
-                        viewModel.habits[i].title = renameText
-                    }
-                    renamingHabitID = nil
-                }
-                Button("Abbrechen", role: .cancel) { renamingHabitID = nil }
             }
         }
     }
@@ -212,46 +159,6 @@ struct TasksView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(Color(.secondarySystemGroupedBackground))
         )
-    }
-
-    private var addHabitCard: some View {
-        VStack(spacing: 14) {
-            HStack(spacing: 10) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(Color(hex: "FF6584"))
-                TextField("Neuer Habit…", text: $newHabitTitle)
-                    .font(.system(size: 16, weight: .medium))
-                    .focused($habitFocused)
-                    .submitLabel(.done)
-                    .onSubmit { addHabit() }
-            }
-            Button(action: addHabit) {
-                Label("Hinzufügen", systemImage: "plus")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 13)
-                    .background(
-                        RoundedRectangle(cornerRadius: 13, style: .continuous)
-                            .fill(newHabitTitle.trimmingCharacters(in: .whitespaces).isEmpty
-                                  ? Color(hex: "FF6584").opacity(0.3)
-                                  : Color(hex: "FF6584"))
-                    )
-            }
-            .disabled(newHabitTitle.trimmingCharacters(in: .whitespaces).isEmpty)
-        }
-        .padding(16)
-        .background(RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(Color(.secondarySystemGroupedBackground)))
-    }
-
-    private func addHabit() {
-        let t = newHabitTitle.trimmingCharacters(in: .whitespaces)
-        guard !t.isEmpty else { return }
-        withAnimation { viewModel.habits.append(Habit(title: t, isDone: false)) }
-        newHabitTitle = ""
-        habitFocused  = false
     }
 
     private func addTask() {

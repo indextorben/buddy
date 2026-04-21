@@ -216,7 +216,7 @@ struct HomeView: View {
 
                         // ── CTA ───────────────────────────────────────────
                         Button {
-                            showTaskEdit = true
+                            showDayPlan = true
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "sparkles")
@@ -284,9 +284,6 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showDeadlines) {
             DeadlinesView(viewModel: viewModel)
-        }
-        .sheet(isPresented: $showDelegation) {
-            DelegationView(viewModel: viewModel)
         }
         .sheet(isPresented: $showBirthdays) {
             BirthdaysView(viewModel: viewModel)

@@ -19,8 +19,11 @@ struct ShoppingView: View {
             List {
                 Section {
                     HStack(spacing: 10) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 20)).foregroundColor(Color(hex: "EC4899"))
+                        Button(action: add) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 20)).foregroundColor(Color(hex: "EC4899"))
+                        }
+                        .buttonStyle(.plain)
                         TextField("Artikel hinzufügen…", text: $newTitle)
                             .font(.system(size: 16)).focused($focused)
                             .submitLabel(.done).onSubmit(add)
