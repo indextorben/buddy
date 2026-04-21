@@ -265,6 +265,7 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
+                .environmentObject(viewModel)
         }
         .sheet(isPresented: $showTaskEdit) {
             TasksView(viewModel: viewModel)

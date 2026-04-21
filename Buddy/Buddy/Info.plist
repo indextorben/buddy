@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Buddy nutzt deinen Standort, um das aktuelle Wetter für dich abzurufen.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Buddy nutzt Spracherkennung, damit du mit ihm sprechen kannst.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Buddy braucht das Mikrofon, um deine Sprache zu verstehen.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Buddy liest deinen Apple Kalender, um Termine in deiner Tagesplanung anzuzeigen.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>

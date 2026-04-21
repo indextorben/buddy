@@ -1,7 +1,7 @@
 import Foundation
 
-struct Deadline: Identifiable {
-    let id = UUID()
+struct Deadline: Identifiable, Codable {
+    var id = UUID()
     var title: String
     var dueDate: Date
 

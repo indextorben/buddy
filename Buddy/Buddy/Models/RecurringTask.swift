@@ -1,6 +1,6 @@
 import Foundation
 
-enum Recurrence: String, CaseIterable, Identifiable {
+enum Recurrence: String, CaseIterable, Identifiable, Codable {
     case daily     = "Täglich"
     case weekdays  = "Mo–Fr"
     case weekends  = "Sa–So"
@@ -31,7 +31,7 @@ enum Recurrence: String, CaseIterable, Identifiable {
     }
 }
 
-enum RoutineTime: String, CaseIterable, Identifiable {
+enum RoutineTime: String, CaseIterable, Identifiable, Codable {
     case morning  = "Morgen"
     case midday   = "Mittags"
     case evening  = "Abend"
@@ -47,8 +47,8 @@ enum RoutineTime: String, CaseIterable, Identifiable {
     }
 }
 
-struct RecurringTask: Identifiable {
-    let id = UUID()
+struct RecurringTask: Identifiable, Codable {
+    var id = UUID()
     var title: String
     var recurrence: Recurrence
     var time: RoutineTime = .anytime

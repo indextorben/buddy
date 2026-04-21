@@ -1,7 +1,7 @@
 import Foundation
 
-struct ShoppingItem: Identifiable {
-    let id = UUID()
+struct ShoppingItem: Identifiable, Codable {
+    var id = UUID()
     var title: String
     var isDone = false
 }

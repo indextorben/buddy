@@ -1,7 +1,7 @@
 import Foundation
 
-struct Appointment: Identifiable {
-    let id = UUID()
+struct Appointment: Identifiable, Codable {
+    var id = UUID()
     var title: String
     var time: Date
 }

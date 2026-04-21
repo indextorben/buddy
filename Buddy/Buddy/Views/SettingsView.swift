@@ -10,12 +10,15 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("buddyName")           private var buddyName           = "Buddy"
     @AppStorage("buddyGender")         private var buddyGender         = ""
+    @AppStorage("buddyVoiceGender")    private var buddyVoiceGender    = "female"
     @AppStorage("accentColorHex")      private var accentColorHex      = "6C63FF"
     @AppStorage("showMotivation")      private var showMotivation      = true
     @AppStorage("showProgressStrip")   private var showProgressStrip   = true
     @AppStorage("showDayOverview")     private var showDayOverview     = true
     @AppStorage("notificationsEnabled")private var notificationsEnabled = false
+    @AppStorage("iCloudSyncEnabled")   private var iCloudSyncEnabled   = false
 
+    @EnvironmentObject private var vm: HomeViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showResetAlert = false
     @State private var showOnboarding = false
@@ -121,6 +124,48 @@ struct SettingsView: View {
                     .tint(Color(hex: accentColorHex))
                 } header: {
                     Text("Startseite")
+                }
+
+                // ── Buddy Chat / Stimme ────────────────────────────────
+                Section {
+                    HStack {
+                        Label("Buddy-Stimme", systemImage: "waveform")
+                        Spacer()
+                        Picker("", selection: $buddyVoiceGender) {
+                            Text("Frau").tag("female")
+                            Text("Mann").tag("male")
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 130)
+                    }
+                } header: {
+                    Text("Chat & Sprache")
+                }
+
+                // ── Synchronisation ────────────────────────────────────
+                Section {
+                    Toggle(isOn: Binding(
+                        get: { iCloudSyncEnabled },
+                        set: { newValue in
+                            iCloudSyncEnabled = newValue
+                            vm.iCloudSyncEnabled = newValue
+                        }
+                    )) {
+                        Label("iCloud Sync", systemImage: "icloud")
+                    }
+                    .tint(Color(hex: accentColorHex))
+                    if iCloudSyncEnabled {
+                        Text("Deine Daten werden automatisch auf all deinen Geräten synchronisiert.")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
+                } header: {
+                    Text("Synchronisation")
+                } footer: {
+                    if iCloudSyncEnabled {
+                        Text("Erfordert \u{201E}iCloud Key-Value Storage\u{201C} in den App-Einstellungen.")
+                            .font(.footnote)
+                    }
                 }
 
                 // ── Benachrichtigungen ─────────────────────────────────
